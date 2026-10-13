@@ -435,6 +435,20 @@ st.markdown(
         transition: all .18s ease;
     }
 
+    .stTabs [data-baseweb="tab-list"] button[role="tab"],
+    .stTabs button[data-baseweb="tab"],
+    [data-testid="stTabs"] button[role="tab"] {
+        border-radius: 999px !important;
+        height: 44px !important;
+        padding: 0 26px !important;
+        overflow: hidden;
+    }
+
+    .stTabs [data-baseweb="tab"] > div,
+    .stTabs [data-baseweb="tab"] [data-testid="stMarkdownContainer"] {
+        border-radius: 999px !important;
+    }
+
     .stTabs [data-baseweb="tab"]:hover {
         border-color: var(--brass);
         box-shadow: 0 3px 10px rgba(74,54,34,.10);
