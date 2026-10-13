@@ -153,7 +153,7 @@ st.markdown(
 
     .block-container {
         max-width: 1480px;
-        padding-top: 1.5rem;
+        padding-top: 4.5rem;
         padding-bottom: 3rem;
     }
 
@@ -529,11 +529,22 @@ def show_fig(fig):
         st.plotly_chart(fig, use_container_width=True, key=key)
 
 
-def show_df(frame, **kwargs):
+def _new_width_api() -> bool:
     try:
-        st.dataframe(frame, use_container_width=True, **kwargs)
-    except TypeError:
+        major, minor = (int(x) for x in st.__version__.split(".")[:2])
+        return (major, minor) >= (1, 50)
+    except Exception:
+        return False
+
+
+NEW_WIDTH_API = _new_width_api()
+
+
+def show_df(frame, **kwargs):
+    if NEW_WIDTH_API:
         st.dataframe(frame, width="stretch", **kwargs)
+    else:
+        st.dataframe(frame, use_container_width=True, **kwargs)
 
 
 def metric_tile(label: str, value: str, sub: str | None = None, accent: str | None = None):
@@ -1165,6 +1176,13 @@ def lda_embed(frame, features, target, order, seed):
 # ------------------------------------------------------------
 # Machine-learning helpers
 # ------------------------------------------------------------
+def make_one_hot():
+    try:
+        return OneHotEncoder(handle_unknown="ignore", sparse_output=False)
+    except TypeError:  # scikit-learn < 1.2
+        return OneHotEncoder(handle_unknown="ignore", sparse=False)
+
+
 def build_preprocessor(numeric: list[str], categorical: list[str]):
     transforms = []
     if numeric:
@@ -1182,7 +1200,7 @@ def build_preprocessor(numeric: list[str], categorical: list[str]):
                 Pipeline(
                     [
                         ("imputer", SimpleImputer(strategy="most_frequent")),
-                        ("encode", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
+                        ("encode", make_one_hot()),
                     ]
                 ),
                 categorical,
@@ -2398,7 +2416,7 @@ elif page == "Explore the Data":
         "Use the filters to shape a cohort, then compare its distributions with interactive graphics.",
     )
 
-    with st.popover("Open the filter controls", use_container_width=True):
+    with st.popover("Open the filter controls", **({"width": "stretch"} if NEW_WIDTH_API else {"use_container_width": True})):
         selected_labels = []
         filter_field = "None"
         numeric_range = None
@@ -3786,11 +3804,11 @@ elif page == "Model Studio":
             )
             result["signature"] = signature
             st.session_state["ms_bundle"] = result
-            st.toast("Experiment complete", icon="✦")
-        except ValueError as error:
+            st.toast("Experiment complete")
+        except Exception as error:
             st.error(
-                "The experiment could not run with this split. Check the class "
-                f"counts and selected fields. Details: {error}"
+                "The experiment could not run. Check the class counts, selected "
+                f"fields and classifiers. Details: {type(error).__name__}: {error}"
             )
         progress.empty()
 
