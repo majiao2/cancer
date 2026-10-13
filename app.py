@@ -420,16 +420,24 @@ st.markdown(
     }
 
     .stTabs [data-baseweb="tab-list"] {
-        gap: 6px;
+        gap: 8px;
         flex-wrap: wrap;
-        border-bottom: 1px solid var(--line);
+        border-bottom: none;
+        padding: 4px 2px 8px;
     }
 
     .stTabs [data-baseweb="tab"] {
-        height: 40px;
-        padding: 0 16px;
-        border-radius: 10px 10px 0 0;
-        background: rgba(255,251,242,.5);
+        height: 38px;
+        padding: 0 20px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(255,251,242,.7);
+        transition: all .18s ease;
+    }
+
+    .stTabs [data-baseweb="tab"]:hover {
+        border-color: var(--brass);
+        box-shadow: 0 3px 10px rgba(74,54,34,.10);
     }
 
     .stTabs [data-baseweb="tab"] p {
@@ -440,10 +448,12 @@ st.markdown(
 
     .stTabs [aria-selected="true"] {
         background: linear-gradient(130deg, #795538, #493326);
+        border-color: #65462f;
+        box-shadow: 0 5px 14px rgba(80,54,36,.22);
     }
 
     .stTabs [aria-selected="true"] p { color: #fff8eb !important; }
-    .stTabs [data-baseweb="tab-highlight"] { display: none; }
+    .stTabs [data-baseweb="tab-highlight"], .stTabs [data-baseweb="tab-border"] { display: none; }
 
     [data-testid="stMetric"] {
         background: rgba(255,251,242,.8);
@@ -1419,17 +1429,23 @@ def render_model_results(bundle: dict):
     kappa = cohen_kappa_score(y_test, ho["pred"], weights=kappa_weights)
     mcc = matthews_corrcoef(y_test, ho["pred"])
 
-    k1, k2, k3, k4, k5 = st.columns(5)
-    k1.metric("Champion", champion)
-    k2.metric(
-        "CV accuracy (95% CI)",
-        f"{board.iloc[0]['CV accuracy']:.1%}",
-        f"[{board.iloc[0]['CI low']:.1%}, {board.iloc[0]['CI high']:.1%}]",
-        delta_color="off",
-    )
-    k3.metric("Hold-out accuracy", f"{board.iloc[0]['Hold-out acc.']:.1%}", f"n = {bundle['n_test']}", delta_color="off")
-    k4.metric("MCC", f"{mcc:.3f}")
-    k5.metric("Weighted κ" if target_ordinal else "Cohen’s κ", f"{kappa:.3f}")
+    k1, k2, k3, k4, k5 = st.columns([1.3, 1.5, 1, 0.8, 0.9])
+    best_row = board.iloc[0]
+    with k1:
+        metric_tile("CHAMPION", str(champion), f"{len(names)} models compared", "#503725")
+    with k2:
+        metric_tile(
+            "CV ACCURACY",
+            f"{best_row['CV accuracy']:.1%}",
+            f"95% CI {best_row['CI low']:.1%} – {best_row['CI high']:.1%}",
+            "#69765b",
+        )
+    with k3:
+        metric_tile("HOLD-OUT ACCURACY", f"{best_row['Hold-out acc.']:.1%}", f"n = {bundle['n_test']}", "#bd965b")
+    with k4:
+        metric_tile("MCC", f"{mcc:.3f}", "Matthews corr.", "#9b6650")
+    with k5:
+        metric_tile("WEIGHTED κ" if target_ordinal else "COHEN’S κ", f"{kappa:.3f}", "quadratic weights" if target_ordinal else "chance-corrected", "#6f8796")
 
     if board.iloc[0]["CV accuracy"] >= 0.98:
         st.warning(
