@@ -399,6 +399,26 @@ st.markdown(
         box-shadow: 0 5px 15px rgba(80, 54, 36, .17);
     }
 
+    /* Keep text readable even when the viewer's browser/Streamlit theme is dark */
+    [data-testid="stMain"] [data-testid="stMarkdownContainer"] p,
+    [data-testid="stMain"] [data-testid="stMarkdownContainer"] li,
+    [data-testid="stMain"] [data-testid="stWidgetLabel"] p,
+    [data-testid="stMain"] [data-testid="stCaptionContainer"],
+    [data-testid="stMain"] [data-testid="stCaptionContainer"] p,
+    [data-testid="stMain"] [data-testid="stExpander"] summary,
+    [data-testid="stMain"] [data-testid="stExpander"] summary p,
+    [data-testid="stMain"] label,
+    [data-testid="stMain"] label p,
+    section.main [data-testid="stMarkdownContainer"] p,
+    section.main label p {
+        color: #3a2f24 !important;
+    }
+
+    [data-testid="stMain"] .stButton > button [data-testid="stMarkdownContainer"] p,
+    [data-testid="stMain"] .stButton > button p {
+        color: #fff8eb !important;
+    }
+
     .stTabs [data-baseweb="tab-list"] {
         gap: 6px;
         flex-wrap: wrap;
